@@ -638,38 +638,83 @@ class Solution {
 先找左边界，然后找右边界
 
 ```
-class Solution {
+public class Solution {
     public int[] searchRange(int[] nums, int target) {
-        int leftIdx = binarySearch(nums, target, true);
-        int rightIdx = binarySearch(nums, target, false);
-        if (leftIdx <= rightIdx && rightIdx < nums.length && nums[leftIdx] == target && nums[rightIdx] == target) {
-            return new int[]{leftIdx, rightIdx};
-        }
-        return new int[]{-1, -1};
-    }
+        int[] res = {-1, -1};
+        if (nums.length==0) return res;
 
-    public int binarySearch(int[] nums, int target, boolean prj){
-        int l = 0, r = nums.length-1, ans = 0;
-        while(l<=r){
-            int mid =(l+r)>>1;
-            if(nums[mid]<target || (!prj&&nums[mid]==target)){
-                l = mid + 1;
-                if(!prj) ans = mid;
-            }else if(nums[mid]>target || (prj&&nums[mid]==target)){
-                r = mid - 1;
-                if(prj) ans = mid;
-            }
+        // 二分法查起始位置
+        int left = 0, mid, right = nums.length - 1;
+        while (left < right) {
+            mid = left + (right - left) / 2;
+            if (nums[mid] < target)
+                left = mid + 1;
+            else
+                right = mid;
         }
-        return ans;
+        // 在数组中 target 有可能不存在，故起始位置有可能不存在，这里要判断一下
+        // 若存在，则赋值给开始位置
+        if (nums[left] == target)
+            res[0] = left;
+        else
+            return res;
+
+        
+        // 二分法查结束位置
+        left = 0;
+        right = nums.length - 1;
+        while (left < right) {
+            mid = left + (right - left + 1) / 2;   
+            if (nums[mid] > target)
+                right = mid - 1;
+            else
+                left = mid;
+        }
+        // 代码跑到这里，说明起始位置存在，那么结束位置一定存在，直接赋值即可
+        res[1] = left;
+
+        return res;
     }
 }
 ```
 
-lower为true的时候，找左边界，nums[mid]=target的时候，right也要移到mid-1；
+二分查找法模板：
 
-lower为false的时候，找右边界，nums[mid] = target的时候，left也要移到mid+1；
+方法一：
 
+```
+int left = 0, mid, right = nums.length - 1;
+ while(left < right) {
+ 	mid = left + (right - left) / 2;   // 1.防溢出；2.看到 left = mid + 1 使用下取整
+ 	if(nums[mid] < target)
+ 		left = mid + 1;   // 下一轮在区间 [mid + 1, right] 中查询
+ 	else
+ 		right = mid;   // 下一轮在区间 [left, mid] 中查询
+ }
+ 
+ if(nums[left] == target)
+ 	return left;   // 存在，返回索引
+ return -1;   // 不存在，返回其他
+```
 
+方法二：
+
+```
+int left = 0, mid, right = nums.length - 1;
+ while(left < right) {
+ 	mid = left + (right - left + 1) / 2;   // 1.防溢出；2.看到 left = mid 使用上取整
+ 	if(nums[mid] > target)
+ 		right = mid - 1;   // 下一轮在区间 [left, mid - 1] 中查询
+ 	else
+ 		left = mid;   // 下一轮在区间 [mid, right] 中查询
+ }
+ 
+ if(nums[left] == target)
+ 	return left;   // 存在，返回索引
+ return -1;   // 不存在，返回其他
+```
+
+当序列中target有多个时，方法一为找最左端，方法二为找最右端；当target只有一个时，两个方法等效。
 
 
 
